@@ -1,0 +1,167 @@
+ Şimdi elimizde hareket eden bir animasyon ve arkaplan olmuş oldu. Gayet güzel bir görüntü elde ettik ancak tüm işlemlerimizi CatGame classında ve bu classın constructorında yaptık. Burayı düzenlememiz lazım. Öncelikle Kedi componentimizi yarattığımız alanları Game classımızdan ayrı bir dart dosyasına taşıyalım. cat.dart oluşturalım
+ Burada Cat classımızı AnimationComponentdan extends edelim. Çünkü Kedi nesnemizi AnimationComponent sınıfından türetmiştik. Şimdi condtructorımızı oluşturalım ki sınıf içerisindeki initialize işlemlerini yapsın. Kedi componentimizi animationcomponent empty olarak oluşturduğumzudan componentimizin burada herhangi bir şey almasına gerek yok aslında. 
+ Cat() : super.empty(){} .  Artık catgame classımkızdan bunları taşıdıkça kaldırabiliriz. Cat ile ilgili yaptığımız işlemleri buraya taşıyalım. _cat kısmında hata alcağız bunun nedeni artık _cat değişkenimiz yok ve gerek de yok çünkü artık cat classımız zaten bir animation component olduğu için this diyerek bunun oluşturabiliriz. add kısmını yine catgame classımızdan yapacağız ancak içine _cat olarka verdiğimiz değişkeni Cat den türeteceğiz. Ve constructor da atama yaptığımız kısmı da add in hemen üstüne alabiliriz daha iyi görmek için. Constructordaki tüm kodları taşıdık. Ancak resize içerisinde yazdığımız kodları da taşımamız gerekiyor tabi.
+resize methodunu olduğu gibi alalım. Size için dartui import etmemiz gerekiyor.  _cat olanları this olarak değiştirmemiz gerekiyor. Şimdi oyunumuzu hot restart yapalım gördüğünüz gibi her şey aynı şekilde çalışıyor. 
+Artık karakterimizin animasyonlarını kontrol etmek için düzenleyebiliriz. iki tane animasyon tanımlayalım. Ve bunları constructor da oluşturalım. this.animation olarak yürümeyi verelim. çünkü bu bizim def animationımız olacak. Ancak animasyonu değiştirmek istediğimizde kullanmak için bu animasyonları set edeceğimiz fonksiyonlar oluşturalım biri run biri de sleep. (this.animation = _runAnimation) gibi. Bu methodların çalıştığını göstermek için Catgame sınıfımızda add kodundan önce hit methodunu çağıralım. görüyorsunuz.
+Yani artık cat karakterimizin animnasyonunu class dışından da methodu çağırarak kontrol edebiliyoruz. 
+
+ Şimdi kullanıcı inputlarımızı nasıl yakalayabiliriz ve oyun içinde nasıl kullanabiliriz onu görmek için bir click eventi ekleyelim. Kullanıcıdan tıklama inputu aldığımızda karakterimiz zıplayacak. Bunun için öncelikle classımıza TapDetector eklememiz gerekiyor(with ile) Game sınıfımızda artık ontap gibi şeyleri çağırabiliyoruz gördüğünüz gibi. burada ontapdown ı kullanacsğız. Bu method artık ekrana tıklamalarınızı yakalayacak super koduna bir breakpoint koyup bunu görebiliriz. Zıplama işlemini burada kullanıcı ekrana tıkladığında yapacağız. eğer bir jump methodumuz olursa run ve diğerleri gibi buradan çağırabiliriz.
+ o zaman cat sınıfımıza gidelim ve bir jump methodu oluşturalım. Bu methodda yapmamız gereken y ekseninde karakterimizin poziysonun değiştirmek aslında. öncelikle bulunduğu konumdan belirlediğimiz bir max y seviyesine çıkacak ve daha sonrasında geri eski haline dönecek. Ve bu bir zaman değişkenine bağlı olarak değşecek. Burada biraz fiziğimizi ve matematiğimizi konuşturacağız. Öncelikle karakterimizin y değerindeki hızını doube olarak tanımlayalım.0.0 olacak çünkü hızımızın 0 ile başlayıp geri de sıfır ile bitmesi gerekiyor. Ayrıca dediğim gibi ve max y seviyemize ihtiyacımız olacak ekranda ne kadar yükselmesini istiyorsak onu belirlediğmiz. bunu resize methodumuzda atayacağız. this.y olarak atayalım. jump methodumuzda this.speedy mizi -600 olarak tanımlayalım - çünkü flame de bu yukarıyı temsil ediyor. Bundan sonra zamana bağlı olarak bu hızı değiştirmemiz gerekiyor.
+ Ve bir yerden sonra da geri dönmesini istiyoruz. Bu nedenle bir GRAVITY değişkenine ihtiyacımız olacak.  const olarak tanımlayalım. Pozitif bir değer olduğundan bu değerin aşağıyı temsik ettiğini anlamışsınızdır. Bu değerlerimizi her bir frame de hesaplatmak için artık update methodumuzu override edelim. Bu method oyun döngüsünde her bir frame de çağırılıp. Oyun 60 fps se bu methoıd saniyede 60 kere çağırılır. Bu method time değişkeni alır ve bu değişkende son framein saniyesini verir bize aslında. Yani zamana bağlı tüm hesaplamalarımızı burada yapabiliriz.
+ burda sürat hesaplaması yapalım final velocity = initial velo + gravity x time
+ t-süre sonra cismin hızı;
+V = V0 + g.t
+ bu durumda speedy = speedy + gravity x t 
+ distance = x0 + speed x time şimdiki pozisyonla yeni pozisyonumuzun mesafesini de bu şekilde hesaplayacağız. 
+ bu da yine basit bir fizik işlemi aslında. initial pozisyonumuzu da eklememiz gerekiyor. x0 bu
+ this.y += this.speedy x t
+çalıştırdığımızda karakterimizin sürekli aşağı düştüğünü görüyoruz bunu değiştirmek için bir bool değişkeni belirleyelim. isonGround diye. kedimiz şuanda yerde mi değil mi diye kontrol edeceğiz. 
+bu y değeri ymax e eşit veya daha büyükse true döndürecek. yani başlandıçta kedi yerde başladığından bu method true döndürecek.
+update içinde if içinde this.y = ymax ve speed y = 0 yapacağız.  
+tekrar çalıştırdığımızda görüyoruz ki artık kedimiz başlar başlamaz aşağıya düşmüyor.
+Ve jum methodunu ontap e verdiğimizde göreceğiz ki ekrana tıkladığımızda artık karakterimiz zıplayacak.
+
+Tabi bu hesaplamalar aslında size kalmış bişey. Bu şekilde fizik ile uyumlu bir hesaplama yapmak zorunda değilsiniz.
+burada ekrana çokça tıklanıldığında kedi sürekli zıplıyor ancak bu oyun esnasında istemediğimiz bir durum.
+bunun için jump methoduna isonground şartını ekleyelim. Örneğin buraya bir karakterinizin skilli olarak double jump yapabilmesini istiyorsanız bu şekilde kontrol de edebilirsiniz.
+
+ Şimdi oyunumuza biraz enemy karakterlei ekleyelim. İmages klasörü altında buların spritesheetlerini ekleyelim.
+ bunlardan sonra oyunumzuu durdurup tekrar başlatalım. bu sırada yeni enemy classımızı oluşturalım ve yine AnimationComponentden extend olmalı.
+ catden kopyalayıp gerekli düzenlemeleri yapabiliriz. bunların sadece bir animayonu olduğundan constructor içinde animasyonunu direk this.animation olarak tanımlayabiliriz.
+
+ ayrıca burada resize methoduna ihtiyacımız var. buradaki düzenlemeleri yapalım.
+ burada birden fazla const değeri olduğu için bunları constant dartta tutup her yerden çağırabiliriz.
+ enemy lerimiz rectangle olduğu için resize içindeki width height değerleri eşit olmamalı 
+x değeri için kedi karakteri solda olduğu için bu şekilde yapmıştık ancak enemylerimiz sağdan gelecek. bu nedenle burayı değiştirmemiz gerekiyor. x değerine size.width + enemy width vereceğiz ki ekranın dışında oluşup gelsin ekrana.
+ kedi sheetinde boş pikseller olduğu için y değerinde yaptığımız kısmı kaldırabilriz enemyde bunlar farklı çünkü.
+ şimdi update methodunu override edip enemyi sağdan sola hareket edecek şekilde ayarlayalım bir speed değişkeni oluşturup
+ thisx -= speed x t diyerek yapalım hesaplamamızı. Son olarak da componentımızı game sınıfımıza ekleyelim
+  ancak burada bir stop noktası belirlemediğimiz için enemy y değeri - ye doğru devam ediyor ekrandan çıkmış olamsına rağmen
+bu oyun döngümüz için iyi değil karakteri bir kez gösterecek olsak bile ekrandan çıktığında durdurmamız gerekiyor. Ki bunu da birazdan göstereceğim.
+ancak biz  şuan enemynin sürekli gelmesini istiyoruz. burada enemymizin konumu ekran dışına çıktığında tekrar başlangıca konumlandırmamız gerekiyor.
+update methoduna bir if ekleyelim this.x < -this.width ise karakter ekrandan tamamen çıkmış demektir.
+bu durumda konumlandırma için size ı kullanmamız gerekecek. Size değişkeni oluşturalım ve resize daki komutu this.x e atayalım tekrardan.
+şuan bir enemy miz olduğu için classı bu şekilde oluşturduk ancak birden fazla olsaydı buradaki image texture width height gibi değişkenleri her bir enemy için ayrı ayrı oluşturup bu class içine verebilriz.
+
+9.00
+
+Oyunumuza birde basit bir score sistemi ekleyelim. Bunun için bir textcomponent oluşturalım bu ekranda scoretexti göstermemizi sağlayacak. ve tabi bir int score değişkenimize ihtiyacımız var hesaplama için. constructor da atayalım text componenta score u ver elim. score 0 dan başlayacak. ve bu componentı da add ile ekleyelim.
+score hesaplamasını da zamana bağlayalım. bunun için update de scoe+= 60 xt hesaplaması yapalım. t double olduğu için bunu inte çevirmemiz gerekiyor
+Şimdi ekranda score umuzu görebiliyoruz ancak köşede duruyor. ekranda ortalayacak şekilde gösterelim. scoretext componentımızı setbyposition ile konumlandıralım. Bu bir position istiyor.  ekranımızın yarısını alırsak ve componentımizin width inin yarısını çıkartırsak(tam ortada görünmesi için), 0  
+Burada textcomponent içinde textconfig ile yazı stilini değiştirebilirsiniz renk font gibi
+
+Bir sürü enemy miz oldu ancak şuan sadece birini gösterebiliyoruz. Bunları random bir şekilde ortaya çıkarmamız gerekiyor. Bunun için bir EnemySpawner oluşturacağız.
+
+enemy manager ini component dan extend olacak şekilde oluşturalım. bunu normal bir dart sınıfı olarak oluşturadabilirdik.
+ama enemy manager ın oyunun güncel durumunu bilmesi gerektiğinden ve her bir frame de oyun ile eşitcamanlı bir şekilde güncellenmesini istediğimizden component classından türeteceğiz.
+bu şekilde add ile oyun classımıza ekleyebiliriz.
+component sınıfı bir abstract class olduğundan resize ve update methodunu eklememiz zorunlu burada.
+bu yüzden kırmızılık oluştu.
+tüm initializelarımız için yine bir constructor oluşturalım. Enemylerimizi random oluşturmak istediğimiz için öncelikle bir random instance ı oluşturalımç
+ve bir timer değişkeni belirleyelim ki enemylemiz her saniye ekranda oluşmasın
+zamanı repeat etmesini istediğimiz için repeat true değerini ve randomenemyleri oluşturcağımız bir spawnrandomenemy methodunu callback fonksiyonumuz ile timer ı çağıralım constructorda.
+bu methodda öncelikle bir random int değeri belirleyelim final olarak.
+enemytypes.values.length olarak dinamik olarak max değeri belirleyebiliriz.
+randomenemytype değişkenini elemntat ile random değişkenini vererek enemy type valuesda bulalımç
+new enemy değişkeni iile enemy clasını randomtype değişkenimizi vererek çağıralım.
+Evet oluşacak yeni enemy mizi belirledik ancak burada add methodunu çağıramıyoruz. 
+enemymizi ekrana eklemek için şöyle bir şey yapacağız. enemymanager ı hasgameref den wxtend edeceğiz with ile.
+bunun içine referans olacağı oyun classımızı verelim.
+şimdi oluşturduğumuz referansı kullanarak constructor da enemy componentımızı oyuna ekleyebiliriz artık.
+Burada bir farklı add methodu daha var addlater adında. ADD methdu oyun döngüsü başlar başlamaz componentları ekler. addlater Bu oyun döngüdü başlar başlamaz değilde daha sonrasında ekleyeceğimiz componentlar için kullanacağımız bir method ki aslında tam da bu method gerekli enemy componentımız için
+çünkü enemyler oyun başlar başlamaz değil de biraz oyuna devam ettikten sonra çıksın istiyoruz.
+ burada enemy manager game sınfımıza eklendikten sonra timer ı çalıştırmamızın lazım. bu nedenle bunun için onmount methodunu override edip içinde timerı başlatacağız.
+ time değişkeninide oyun döngüsündeki zaman değişkeni ile update edelim update içerisinde _timer.update (t) ile yapalım.
+ artık game sınıfımızda direkt olarak enemy oluşturmamıza gerek kalmadı
+ bunun yerine enemy manager ı ekleyeceğiz.
+
+ çalıştıralım. birsürü enemy oluşuyor bunun nedeni enemylerimizi sürekli reset edip tekrar oluşturduğumuz kısımdan kaynaklı orayı kaldıralım.
+ ancak burada yine de enemylerimizi ekrandan çıktığında yok etmemiz gerekiyor. ki buda biraz önce bahsettiğim componentlarımızı tek seferlik gösterdiğimiz durumlarda kullanacağımız bir şey.  bunun için destroy methodunu override edelim
+ bu method componentlistimizdeki tüm componentlara er
+bu yöntemin çalışma şekli, her nesne döngüsünden sonra bu yöntem componentlist'in her bileşenini çağırır.
+ true döndürerek componentımızı yok edebilriz. return içerisine update içindeki şartımızı yazalım
+ yani ekrandan çıktıysa true dönsün.
+ 
+ enemylerimiz şuan hep aynı sürede çıkıyor bunu oyun devam ettikçe zorlaşacak şekilde enemylerin çıkmasını sağlayabilriz.
+ spawnlevel değişkeni tanımlayalım.
+ sonrasında update içerisinde newspawnlevel = gameref.score/500).toInt ile tanımlayalım. 
+ Burada aslında toInt yerine dart bize ~/ ile hesaplamamızı inte çevirmemizi sağlıyor bunu kullanabiliriz.
+if (createLevel < newCreateLevel) {
+      createLevel = newCreateLevel;
+      double newTime = (4 / (1 + (0.1 * createLevel)));
+      _timer.stop();
+      _timer = Timer(newTime, repeat: true, callback: () {
+        createEnemy();
+      });
+      _timer.start();
+    }
+
+ Şuan gördüğünüz gibi enemylerimiz karaketimize çarpıyor ancak karakterimiz herhangi bir animasyon oluşturmuyor.
+ Buraya bir animasyon ekleyelim.
+ Burada kedi animasyonu rundan hit animationa geçmeli.
+ update methoduna gidelim. burada components ile oyun içerisindeki tüm componentslara erişebiliyorsunuz.
+ wheretype methodu ile spesific bir type verelim. Ki bu da enemy olacak. foreach ile tüm enemylerimiz için geçerli tutacağız şimdi yazacağım kodu.
+ element yerine enemy yazalım. burada bir şart ekleyeceğiz. eğer cat.distance(enemy) < 20 den ise  
+ cat.sleep(); 
+ çalıştıralım. ancak bu animasyon hep devam ediyor bunu durdurmak için bir timer belirleyelim.
+ limit olarak 2 saniye verelim. callback içine run ı verelim. ve timer ı da hit methodu içinde başlatalım.
+ ve timerımızı yine update içinde update edelim.
+çalıştıralım. hit methodu doğru çalışmıyorç
+ buradaki sorun hit durumundayken enemylerin çarpması
+ ishit bool değeri ile bunu kontrol edelim. ishit false ise hit methodunun içerisindeki komutlar çalışmalı.
+ ve bu değeri true yapmalıyız.
+ run da da geri false a çevirelim.
+
+ burada tam olarak enemylerimizin ve karakterimizin center noktasını doğru vermediğimizden koşulumuz çarpışmayı net olarak algılamıyor.
+ daha önce de bahsettiğim gibi componentların originleri üst sol olarak belirlenmiş bir şekilde. Buradaki origini componentlarımızın ortası olarak değiştirirsek çarpışmayı daha iyi algılamasını sağlarız.
+ bunun için constructor içerisinde this.anchor = anchor.center yaparak originimizi değiştirebiliriz.
+
+çalıştırdığımızda tüm componentlarımızın yukarı çıktığını görüyoruz. Bunun nedeni resize methodumuzda componentları oluştururken origini sol üste göre düşünüp hesaplama yapmamız
+bunu düzeltmek için y değerlerindeki height ı 2 ye bölelim.
+
+CANFLY ? 19.00
+her bir enemy için bu değeri atayıp  ve birde ayrı hızları, resize içinde eğer canfly ise ve randomnextbool isethis.y = this.y - this.height olarak verebiliriz. dediğim gibi - yukarı doğru anlamına gelir bu nedenle çıkarma işlemi yaptık.
+
+
+enemy classındaki tanımlamalardan kurtulmak için orayı boş bir EnemyData _myData diye oluşturup _ enemydteailse a eşitleyelim.
+
+PAUSE button
+Şimdi oyunumuza bir de pause butonu ekleyelim. size oyunumuza widget eklemek istersek nasıl yapacağız onu göstereceğim. Bu nedenle pause butonumuzu bir widget olarak oluşturalım
+Bu arada bunu flame kullanarak da ekleyebilirsiniz. Widgetları aktif edebilmek için 
+HasWidgetOverlay mixinini game clasımıza ekleyelim.
+Constructorımız içerisinde addWidgetOverlay() methodunu çağırabiliyoruz artıkbu method widget adı ki bunu tag gibi düşünebiliriz ve widget alıyor.
+iconbuttonı ekleyip bir görelim.
+
+Oyunu durdurmak için onpressed içine pauseEngine vermemiz yeterli olacak.
+Görelim.
+
+Güzel ancak birde geri oyuna devam edebilmek için bir de devam et butonumuz olmalı
+
+Şimdi birde şunu düşünmeliyiz kullanıcı oyun esnasında oyunu aşağı alabilir veya bir arama gelebilir
+bu durumda ne oluyor onu görelim, oyunumuzu aşağı alalım.score umuz hala saymaya devam ediyor
+Bu bir hata oluşturabilir bunun için lifecyleStateChange methodunda pause game ekleyelim 
+burda resumed dışındakilere pause ekleyip resumed a resume engine ekleyelim
+
+Kalan haklarımızı görmek için Kalpler ekleyelim.
+ cat comp una valuelistanable int life ekleyelim, constructorda 5 olarak atayıp hitte azaltalım.
+ cat game e val listenable builder ekleyelim.
+ builderda for ile icon listesi ve value i den küçükse kalbi favoriiteborder olarak oluştursun.
+ valuelistanable cat.life olcak 
+ game over için update de life ı 0 dan küçük veya eşitse olarak oluşturalım 
+ game over widgetına score u ve replay butonunu da ekleyelim. burada onpressed içinde bunları yapalım.
+
+ score = 0;
+                    _cat.life.value = 5;
+                    _cat.run();
+                    _enemyManager.reset();   enemyde reset methodunda timer 0lanıyo createlevel 0lanıyo
+                    components.whereType<Enemy>().forEach((enemy) {
+                      markToRemove(enemy);
+                    });
+                    resumeEngine();
+                    removeWidgetOverlay('GameOver ');
+                    addWidgetOverlay('PauseGame', _buildPauseButton());
+
+
+MainMenu(play button)
+GameController(game.widget)
+
